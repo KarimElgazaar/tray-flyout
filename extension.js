@@ -54,8 +54,11 @@ export default class TrayFlyout extends Extension {
         // (the panel's manager allows only one open menu). The flyout keeps its grab underneath.
         this._iconMenus = new PopupMenu.PopupMenuManager(this._button);
         // points to where the popup opens, and flips while it is open
+        // (from screen position: the menu's own side is only known after its first open)
         const setArrow = () => {
-            const up = flyout._boxPointer.arrowSide === St.Side.BOTTOM;
+            const [, y] = this._button.get_transformed_position();
+            const mon = Main.layoutManager.findMonitorForActor(this._button);
+            const up = mon ? y > mon.y + mon.height / 2 : false;
             arrow.icon_name = up === flyout.isOpen ? 'pan-down-symbolic' : 'pan-up-symbolic';
         };
         flyout.connect('open-state-changed', (_m, open) => {
@@ -68,8 +71,20 @@ export default class TrayFlyout extends Extension {
             }
         });
         Main.panel.addToStatusArea(ROLE, this._button, 0, 'right');
-        // the panel side can change after start (Dash to Panel moves the button)
-        this._button.connect('notify::mapped', setArrow);
+        // re-check when the button or its whole panel moves (Dash to Panel places it after start)
+        let top = null;
+        this._button.connect('notify::mapped', () => {
+            let a = this._button;
+            while (a.get_parent() && a.get_parent() !== Main.layoutManager.uiGroup)
+                a = a.get_parent();
+            if (a !== top) {
+                top?.disconnectObject(this._button);
+                top = a;
+                a.connectObject('notify::allocation', setArrow, this._button);
+            }
+            setArrow();
+        });
+        this._button.connect('notify::allocation', setArrow);
 
         this._tip = new St.Label({style_class: 'dash-label tray-flyout-tip', visible: false});
         Main.uiGroup.add_child(this._tip);

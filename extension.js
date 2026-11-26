@@ -18,14 +18,11 @@ const tucked = role => role.startsWith('appindicator') || HIDE.includes(nameOf(r
 
 export default class TrayFlyout extends Extension {
     enable() {
-        // this flyout replaces Lilypad's sideways expander
-        Main.extensionManager.disableExtension('lilypad@shendrew.github.io');
         this._moved = new Map(); // indicator -> {parent, index, source, id}
 
         this._button = new PanelMenu.Button(0.5, 'Show hidden icons');
         this._button.add_child(new St.Icon({icon_name: 'pan-up-symbolic', style_class: 'system-status-icon'}));
         this._grid = new St.BoxLayout({style_class: 'tray-flyout-grid', orientation: Clutter.Orientation.VERTICAL});
-        this._button.menu.connect('open-state-changed', (_m, open) => open && this._log());
         const item = new PopupMenu.PopupBaseMenuItem({reactive: false, can_focus: false, style_class: 'tray-flyout-item'});
         item.add_child(this._grid);
         this._button.menu.addMenuItem(item);
@@ -117,13 +114,6 @@ export default class TrayFlyout extends Extension {
         this._grid.destroy_all_children();
         for (const c of order) this._row().add_child(c);
         this._button.visible = order.some(shown);
-    }
-
-    _log() {
-        for (const c of this._icons())
-            console.log(`tray-flyout: ${c.child?.constructor.name} vis=${c.visible}/${c.child?.visible} ` +
-                `op=${c.opacity}/${c.child?.opacity} size=${c.width}x${c.height} mapped=${c.mapped} ` +
-                `kids=${(c.child?.get_children() ?? []).map(k => `${k.constructor.name}:${k.visible}:${k.width}x${k.height}:${k.opacity}`).join(',')}`);
     }
 
     disable() {

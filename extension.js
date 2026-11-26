@@ -165,6 +165,7 @@ export default class TrayFlyout extends Extension {
             'destroy', () => {
                 if (this._dying)
                     return;
+                this._showTip(null);
                 rec.parent?.disconnect(rec.parentId);
                 this._moved.delete(ind);
                 this._sync();
@@ -197,8 +198,11 @@ export default class TrayFlyout extends Extension {
             const [w, h] = ind.get_transformed_size();
             const [tw, th] = this._tip.get_size();
             const gap = 6 * scale();
+            const mon = Main.layoutManager.findMonitorForActor(ind) ?? Main.layoutManager.primaryMonitor;
             const above = y - th - gap;
-            this._tip.set_position(Math.round(x + (w - tw) / 2), Math.round(above >= 0 ? above : y + h + gap));
+            // centred on the icon, but kept on its monitor
+            const tx = Math.min(Math.max(x + (w - tw) / 2, mon.x), mon.x + mon.width - tw);
+            this._tip.set_position(Math.round(tx), Math.round(above >= mon.y ? above : y + h + gap));
             return GLib.SOURCE_REMOVE;
         });
     }

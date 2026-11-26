@@ -27,6 +27,7 @@ export default class TrayFlyoutPrefs extends ExtensionPreferences {
         });
         page.add(group);
         const hidden = settings.get_strv('hidden-indicators');
+        const titles = settings.get_value('indicator-titles').deepUnpack();
         const names = [...new Set([...settings.get_strv('seen-indicators'), ...hidden])].sort();
         for (const name of names) {
             const check = new Gtk.CheckButton({active: hidden.includes(name), valign: Gtk.Align.CENTER});
@@ -36,7 +37,8 @@ export default class TrayFlyoutPrefs extends ExtensionPreferences {
                     list.push(name);
                 settings.set_strv('hidden-indicators', list);
             });
-            const row = new Adw.ActionRow({title: name, activatable_widget: check});
+            const title = titles[name];
+            const row = new Adw.ActionRow({title: title ?? name, subtitle: title ? name : '', activatable_widget: check});
             row.add_prefix(check);
             group.add(row);
         }

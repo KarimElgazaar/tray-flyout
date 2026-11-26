@@ -4,9 +4,9 @@
 .tray-flyout-item:hover { background-color: transparent; }
 .tray-flyout-grid .panel-button {
     padding: 0; margin: 1px;
-    border-radius: 8px; color: #ffffff; background-color: transparent;
+    border-radius: 8px; background-color: transparent;
 }
-.tray-flyout-grid .panel-button:hover { background-color: rgba(255, 255, 255, 0.10); }
+.tray-flyout-grid .panel-button:hover { background-color: rgba(128, 128, 128, 0.20); }
 .tray-flyout-grid .panel-button:active,
-.tray-flyout-grid .panel-button:checked { background-color: rgba(255, 255, 255, 0.16); }
+.tray-flyout-grid .panel-button:checked { background-color: rgba(128, 128, 128, 0.30); }
 .tray-flyout-grid .system-status-icon { icon-size: 16px; }

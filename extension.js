@@ -24,6 +24,10 @@ const draws = a => a.visible && (
     (a instanceof St.Label && !!a.text) ||
     a.get_children().some(draws));
 
+// what to call an indicator: its accessible name, an AppIndicator's title, or its role
+const titleOf = (ind, role) => ind.accessible_name || ind._indicator?.title ||
+    (isAppIndicator(role) ? '' : nameOf(role).replace(/_/g, ' '));
+
 const scale = () => St.ThemeContext.get_for_stage(global.stage).scale_factor;
 
 export default class TrayFlyout extends Extension {
@@ -49,14 +53,27 @@ export default class TrayFlyout extends Extension {
         // Tucked icons' menus get their own manager, so opening one does not close the flyout
         // (the panel's manager allows only one open menu). The flyout keeps its grab underneath.
         this._iconMenus = new PopupMenu.PopupMenuManager(this._button);
+        // points to where the popup opens, and flips while it is open
+        const setArrow = () => {
+            const up = flyout._boxPointer.arrowSide === St.Side.BOTTOM;
+            arrow.icon_name = up === flyout.isOpen ? 'pan-down-symbolic' : 'pan-up-symbolic';
+        };
         flyout.connect('open-state-changed', (_m, open) => {
-            arrow.icon_name = open ? 'pan-down-symbolic' : 'pan-up-symbolic'; // flips like Windows
-            if (open)
+            setArrow();
+            if (open) {
                 this._sync();
-            else
+            } else {
+                this._showTip(null);
                 this._iconMenus.activeMenu?.close();
+            }
         });
         Main.panel.addToStatusArea(ROLE, this._button, 0, 'right');
+        // the panel side can change after start (Dash to Panel moves the button)
+        this._button.connect('notify::mapped', setArrow);
+
+        this._tip = new St.Label({style_class: 'dash-label tray-flyout-tip', visible: false});
+        Main.uiGroup.add_child(this._tip);
+        this._tipId = 0;
 
         const self = this;
         this._injection = new InjectionManager();
@@ -86,27 +103,37 @@ export default class TrayFlyout extends Extension {
         const hideApps = this._settings.get_boolean('hide-appindicators');
         const seen = this._settings.get_strv('seen-indicators');
         const known = new Set(seen);
+        const titles = this._settings.get_value('indicator-titles').deepUnpack();
+        let newTitle = false;
         for (const [role, ind] of Object.entries(Main.panel.statusArea)) {
             if (role === ROLE || !ind)
                 continue;
-            if (!isAppIndicator(role))
-                known.add(nameOf(role));
+            if (!isAppIndicator(role)) {
+                const name = nameOf(role), title = titleOf(ind, role);
+                known.add(name);
+                if (title && titles[name] !== title) {
+                    titles[name] = title;
+                    newTitle = true;
+                }
+            }
             if (isAppIndicator(role) ? hideApps : hidden.includes(nameOf(role)))
-                this._tuck(ind);
+                this._tuck(ind, role);
             else
                 this._untuck(ind);
         }
         if (known.size !== seen.length) // lets prefs list indicators it cannot see itself
             this._settings.set_strv('seen-indicators', [...known].sort());
+        if (newTitle)
+            this._settings.set_value('indicator-titles', new GLib.Variant('a{ss}', titles));
         this._sync();
     }
 
-    _tuck(ind) {
+    _tuck(ind, role) {
         const c = ind.container;
         if (!c || this._moved.has(ind))
             return;
         const parent = c.get_parent();
-        const rec = {parent, index: parent ? parent.get_children().indexOf(c) : -1, style: ind.get_style()};
+        const rec = {parent, role, index: parent ? parent.get_children().indexOf(c) : -1, style: ind.get_style()};
         if (parent)
             rec.parentId = parent.connect('destroy', () => (rec.parent = null));
         parent?.remove_child(c);
@@ -129,9 +156,36 @@ export default class TrayFlyout extends Extension {
             }, this);
         ind.connectObject(
             'notify::visible', () => this._sync(),
+            'notify::hover', () => this._showTip(ind.hover ? ind : null),
             'menu-set', () => this._adoptMenu(ind, rec), this);
         this._moved.set(ind, rec);
         this._adoptMenu(ind, rec);
+    }
+
+    // the icon's name above it after a short hover
+    _showTip(ind) {
+        if (this._tipId)
+            GLib.source_remove(this._tipId);
+        this._tipId = 0;
+        this._tip.hide();
+        if (!ind)
+            return;
+        this._tipId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+            this._tipId = 0;
+            const text = titleOf(ind, this._moved.get(ind)?.role ?? '');
+            if (!text || !ind.hover || ind.menu?.isOpen)
+                return GLib.SOURCE_REMOVE;
+            this._tip.text = text;
+            this._tip.show();
+            Main.uiGroup.set_child_above_sibling(this._tip, null);
+            const [x, y] = ind.get_transformed_position();
+            const [w, h] = ind.get_transformed_size();
+            const [tw, th] = this._tip.get_size();
+            const gap = 6 * scale();
+            const above = y - th - gap;
+            this._tip.set_position(Math.round(x + (w - tw) / 2), Math.round(above >= 0 ? above : y + h + gap));
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _untuck(ind) {
@@ -139,6 +193,8 @@ export default class TrayFlyout extends Extension {
         if (!rec)
             return;
         this._moved.delete(ind);
+        if (this._tip.visible || this._tipId)
+            this._showTip(null);
         const c = ind.container;
         c.disconnectObject(this);
         ind.disconnectObject(this);
@@ -268,8 +324,10 @@ export default class TrayFlyout extends Extension {
         this._injection.clear();
         for (const ind of [...this._moved.keys()])
             this._untuck(ind);
+        this._showTip(null);
+        this._tip.destroy();
         this._button.destroy();
-        this._moved = this._button = this._grid = this._spare = this._iconMenus = null;
+        this._moved = this._tip = this._button = this._grid = this._spare = this._iconMenus = null;
         this._injection = this._themeContext = this._settings = null;
     }
 }

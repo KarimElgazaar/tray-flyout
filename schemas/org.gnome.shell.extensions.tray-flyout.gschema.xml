@@ -19,5 +19,10 @@
       <summary>Indicator names seen in the top bar</summary>
       <description>Filled in by the extension so the preferences can list them.</description>
     </key>
+    <key name="indicator-titles" type="a{ss}">
+      <default>{}</default>
+      <summary>Readable titles of seen indicators</summary>
+      <description>Filled in by the extension so the preferences can show names people recognise.</description>
+    </key>
   </schema>
 </schemalist>

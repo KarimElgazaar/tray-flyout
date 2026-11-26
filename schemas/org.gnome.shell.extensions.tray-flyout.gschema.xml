@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.tray-flyout" path="/org/gnome/shell/extensions/tray-flyout/">
+    <key name="hidden-indicators" type="as">
+      <default>['livepatch', 'tiling_assistant', 'software_update_available', 'unattended_upgrade', 'emoji_copy', 'extension_list', 'clipboardIndicator', 'StatusNotifierItem']</default>
+      <summary>Indicators moved into the flyout</summary>
+      <description>Names of top bar indicators that are shown in the flyout instead of the top bar.</description>
+    </key>
+    <key name="hide-appindicators" type="b">
+      <default>true</default>
+      <summary>Move all AppIndicator icons into the flyout</summary>
+    </key>
+    <key name="stack-clock" type="b">
+      <default>false</default>
+      <summary>Show the clock as time over date</summary>
+    </key>
+    <key name="seen-indicators" type="as">
+      <default>[]</default>
+      <summary>Indicator names seen in the top bar</summary>
+      <description>Filled in by the extension so the preferences can list them.</description>
+    </key>
+  </schema>
+</schemalist>

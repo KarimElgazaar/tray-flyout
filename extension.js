@@ -33,7 +33,8 @@ export default class TrayFlyout extends Extension {
         this._dying = false;
 
         this._button = new PanelMenu.Button(0.5, 'Show hidden icons');
-        this._button.add_child(new St.Icon({icon_name: 'pan-up-symbolic', style_class: 'system-status-icon'}));
+        const arrow = new St.Icon({icon_name: 'pan-up-symbolic', style_class: 'system-status-icon'});
+        this._button.add_child(arrow);
         const flyout = this._button.menu;
         flyout.actor.add_style_class_name('tray-flyout-menu');
         this._grid = new St.Widget({style_class: 'tray-flyout-grid', layout_manager: new Clutter.GridLayout()});
@@ -49,6 +50,7 @@ export default class TrayFlyout extends Extension {
         // (the panel's manager allows only one open menu). The flyout keeps its grab underneath.
         this._iconMenus = new PopupMenu.PopupMenuManager(this._button);
         flyout.connect('open-state-changed', (_m, open) => {
+            arrow.icon_name = open ? 'pan-down-symbolic' : 'pan-up-symbolic'; // flips like Windows
             if (open)
                 this._sync();
             else

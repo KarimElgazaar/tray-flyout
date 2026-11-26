@@ -6,6 +6,8 @@ Optionally it stacks the clock as time over date, like Windows.
 
 ## Install
 
+Download `tray-flyout@karimelgazaar.github.io.shell-extension.zip` from the [latest release](https://github.com/KarimElgazaar/tray-flyout/releases/latest), then:
+
 ```sh
 gnome-extensions install tray-flyout@karimelgazaar.github.io.shell-extension.zip
 ```

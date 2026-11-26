@@ -1,6 +1,8 @@
 {
-  "uuid": "tray-flyout@karim",
+  "uuid": "tray-flyout@karimelgazaar.github.io",
   "name": "Tray Flyout",
-  "description": "Windows-style hidden-icons flyout: a ^ button that opens tray icons in a popup above the taskbar.",
-  "shell-version": ["50"]
+  "description": "Windows-style hidden-icons flyout: a ^ button in the top bar opens the tray icons you choose in a small grid popup. Optionally stacks the clock as time over date.",
+  "shell-version": ["50"],
+  "url": "https://github.com/KarimElgazaar/tray-flyout",
+  "settings-schema": "org.gnome.shell.extensions.tray-flyout"
 }

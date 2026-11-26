@@ -1,9 +1,9 @@
+/* the theme's 15em minimum would leave an empty gap next to the grid */
+.popup-menu.tray-flyout-menu { min-width: 0; }
 .tray-flyout-item { padding: 4px; }
 .tray-flyout-item:hover { background-color: transparent; }
-.tray-flyout-grid { spacing: 2px; }
-.tray-flyout-row { spacing: 2px; }
 .tray-flyout-grid .panel-button {
-    min-width: 40px; min-height: 40px; padding: 0; margin: 0;
+    padding: 0; margin: 1px;
     border-radius: 8px; color: #ffffff; background-color: transparent;
 }
 .tray-flyout-grid .panel-button:hover { background-color: rgba(255, 255, 255, 0.10); }

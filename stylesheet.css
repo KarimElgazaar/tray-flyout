@@ -1,0 +1,12 @@
+.tray-flyout-item { padding: 4px; }
+.tray-flyout-item:hover { background-color: transparent; }
+.tray-flyout-grid { spacing: 2px; }
+.tray-flyout-row { spacing: 2px; }
+.tray-flyout-grid .panel-button {
+    min-width: 40px; min-height: 40px; padding: 0; margin: 0;
+    border-radius: 8px; color: #ffffff; background-color: transparent;
+}
+.tray-flyout-grid .panel-button:hover { background-color: rgba(255, 255, 255, 0.10); }
+.tray-flyout-grid .panel-button:active,
+.tray-flyout-grid .panel-button:checked { background-color: rgba(255, 255, 255, 0.16); }
+.tray-flyout-grid .system-status-icon { icon-size: 16px; }

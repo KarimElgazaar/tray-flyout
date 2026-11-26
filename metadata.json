@@ -1,0 +1,6 @@
+{
+  "uuid": "tray-flyout@karim",
+  "name": "Tray Flyout",
+  "description": "Windows-style hidden-icons flyout: a ^ button that opens tray icons in a popup above the taskbar.",
+  "shell-version": ["50"]
+}
